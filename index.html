@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinite Corkboard — Enhanced</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/emoji-mart@5/dist/browser.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --grid-line-color: #eef2f7;
+      --bg-color: #fdfdfd;
+    }
+    .theme-white { --grid-line-color: #eef2f7; --bg-color: #f7fafc; }
+    .theme-dark { --grid-line-color: #2d3748; --bg-color: #1a202c; }
+    .theme-orange { --grid-line-color: #d1c6a2; --bg-color: #cfbd87; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      overscroll-behavior: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .board-item-selected {
+      box-shadow: 0 0 0 3px #3b82f6, 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+    }
+    .has-grid {
+      background-color: var(--bg-color);
+      background-image:
+        linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    @keyframes itemAppear {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .item-appear {
+      animation: itemAppear 0.3s ease-out forwards;
+    }
+    .drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .drawing-canvas.active {
+      pointer-events: auto;
+    }
+    .selection-box {
+      position: absolute;
+      border: 2px dashed #3b82f6;
+      background-color: rgba(59, 130, 246, 0.1);
+      pointer-events: none;
+      z-index: 100;
+    }
+    .link-preview {
+      max-width: 300px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .link-preview-image {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background-color: #f3f4f6;
+    }
+    .link-preview-content {
+      padding: 12px;
+    }
+    .link-preview-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #1f2937;
+    }
+    .link-preview-description {
+      font-size: 12px;
+      color: #4b5563;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .link-preview-url {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .welcome-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .welcome-content {
+      background-color: white;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .welcome-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      color: #1f2937;
+    }
+    .welcome-text {
+      margin-bottom: 20px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+    .welcome-features {
+      margin-bottom: 24px;
+    }
+    .welcome-feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .welcome-feature-icon {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    .welcome-feature-text {
+      color: #4b5563;
+    }
+    /* Custom Icon Colors */
+    [data-lucide="sticky-note"] { color: #facc15; }
+    [data-lucide="image"] { color: #4ade80; }
+    [data-lucide="youtube"] { color: #ef4444; }
+    [data-lucide="smile"] { color: #fde047; }
+    [data-lucide="shapes"] { color: #a78bfa; }
+    [data-lucide="scan"] { color: #60a5fa; }
+    [data-lucide="trash-2"] { color: #f87171; }
+    [data-lucide="sliders-horizontal"] { color: #2dd4bf; }
+    [data-lucide="palette"] { color: #f472b6; }
+    [data-lucide="save"] { color: #38bdf8; }
+    [data-lucide="folder-open"] { color: #fb923c; }
+
+    [data-lucide="undo-2"], [data-lucide="redo-2"], [data-lucide="plus"], [data-lucide="minus"] {
+      color: #e5e7eb;
+    }
+    [data-lucide="square"] { color: #3b82f6; }
+    [data-lucide="circle"] { color: #22c55e; }
+    [data-lucide="move-right"] { color: #ef4444; }
+    
+    .TBBtn.bg-blue-500 [data-lucide],
+    .ShapeButton.bg-blue-500 [data-lucide] {
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+      .main-toolbar {
+        flex-direction: column;
+        width: 55px;
+        height: auto;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        max-width: none;
+        padding: 12px 8px;
+      }
+      .toolbar-section {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .toolbar-separator {
+        width: 80%;
+        height: 1px;
+        margin: 4px 0;
+      }
+      .style-control-group {
+        flex-direction: column;
+        padding: 8px;
+      }
+      .style-menu-label {
+        margin-bottom: 4px;
+      }
+      .item-control-handle {
+        width: 32px;
+        height: 32px;
+      }
+      .welcome-content {
+        padding: 20px;
+      }
+    }
+  </style>
+
+<link rel="stylesheet" href="/index.css">
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/Mind-Place-CorkBoard/assets/index-DDidQGpB.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
