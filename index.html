@@ -147,6 +147,17 @@
     .welcome-feature-text {
       color: #4b5563;
     }
+    .context-menu {
+      position: fixed;
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      padding: 8px;
+      border-radius: 9999px; /* pill shape */
+      transform: translate(-50%, -150%); /* Center above point, with some space */
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
     /* Custom Icon Colors */
     [data-lucide="sticky-note"] { color: #facc15; }
     [data-lucide="image"] { color: #4ade80; }
@@ -159,49 +170,51 @@
     [data-lucide="palette"] { color: #f472b6; }
     [data-lucide="save"] { color: #38bdf8; }
     [data-lucide="folder-open"] { color: #fb923c; }
+    [data-lucide="help-circle"] { color: #60a5fa; }
 
     [data-lucide="undo-2"], [data-lucide="redo-2"], [data-lucide="plus"], [data-lucide="minus"] {
       color: #e5e7eb;
     }
-    [data-lucide="square"] { color: #3b82f6; }
-    [data-lucide="circle"] { color: #22c55e; }
-    [data-lucide="move-right"] { color: #ef4444; }
+    /* Shape tool icons */
+    [data-lucide="square"], [data-lucide="circle"], [data-lucide="move-right"] {
+        color: #e5e7eb;
+    }
     
-    .TBBtn.bg-blue-500 [data-lucide],
-    .ShapeButton.bg-blue-500 [data-lucide] {
+    .TBBtn.bg-blue-500 [data-lucide] {
         color: white;
+    }
+
+    .color-swatch-selected {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+    .transparent-swatch {
+        background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                          linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                          linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                          linear-gradient(-45deg, transparent 75%, #ccc 75%);
+        background-size: 10px 10px;
+        background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
     }
 
     @media (max-width: 768px) {
       .main-toolbar {
-        flex-direction: column;
-        width: 55px;
-        height: auto;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        max-width: none;
-        padding: 12px 8px;
+        width: 95vw;
+        max-width: 95vw;
+        overflow-x: auto;
+        /* Hide scrollbar for clean look */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
       }
-      .toolbar-section {
-        flex-direction: column;
-        gap: 8px;
+      .main-toolbar::-webkit-scrollbar {
+        display: none; /* Chrome, Safari and Opera */
       }
-      .toolbar-separator {
-        width: 80%;
-        height: 1px;
-        margin: 4px 0;
-      }
-      .style-control-group {
-        flex-direction: column;
-        padding: 8px;
-      }
-      .style-menu-label {
-        margin-bottom: 4px;
+      .toolbar-section, .style-and-zoom-controls {
+        flex-wrap: nowrap;
       }
       .item-control-handle {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 40px;
       }
       .welcome-content {
         padding: 20px;
@@ -219,7 +232,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/Mind-Place-CorkBoard/assets/index-DDidQGpB.js"></script>
+  <script type="module" crossorigin src="/Mind-Place-CorkBoard/assets/index-Dr3UXPD3.js"></script>
 </head>
 <body>
   <div id="root"></div>
