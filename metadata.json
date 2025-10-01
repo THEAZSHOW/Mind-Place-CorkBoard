@@ -1,0 +1,5 @@
+{
+  "name": "Infinite Corkboard",
+  "description": "An enhanced digital corkboard application that allows users to create and arrange sticky notes, images, videos, emojis, and links on an infinite canvas. Features include drawing, area selection, item connections, and customizable themes.",
+  "requestFramePermissions": []
+}
